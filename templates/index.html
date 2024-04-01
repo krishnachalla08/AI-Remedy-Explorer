@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Search</title>
+    <title>AI PDF Search</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -54,19 +54,19 @@
 </head>
 <body>
     <div class="container">
-        <h1>PDF Search</h1>
+        <h1>AI Remedy explorer</h1>
         <form method="post">
-            <label for="pdf_path">PDF Path:</label>
+            <label for="pdf_path">Enter the pdf path:</label>
             <input type="text" id="pdf_path" name="pdf_path" required><br><br>
 
-            <label for="query">Query:</label>
+            <label for="query">Enter the query:</label>
             <input type="text" id="query" name="query" required><br><br>
 
             <button type="submit">Search</button>
         </form>
 
         {% if query %}
-        <h2>Query: {{ query }}</h2>
+        <h2>Result for : {{ query }}</h2>
         <p>{{ answer }}</p>
         {% endif %}
     </div>
