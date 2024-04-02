@@ -3,35 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI PDF Search</title>
+    <title>AI Remedy Explorer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f8f9fa;
+            background-image: url('img.png'); /* Add your image path here */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
         .container {
             max-width: 600px;
             margin: 50px auto;
             padding: 20px;
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.8); /* Add opacity to make the background semi-transparent */
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
-        h1, h2 {
+        h1 {
+            color: #007bff;
+            text-align: center;
+        }
+
+        h2 {
             color: #333;
+            margin-top: 20px;
         }
 
         label {
             font-weight: bold;
+            color: #333;
         }
 
         input[type="text"] {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             margin: 6px 0;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -45,29 +56,44 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            display: block;
+            margin: 20px auto 0;
         }
 
         button:hover {
             background-color: #0056b3;
         }
+
+        .result {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+
+        .result p {
+            margin-top: 10px;
+            color: #333;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>AI Remedy explorer</h1>
+        <h1>AI Remedy Explorer</h1>
         <form method="post">
-            <label for="pdf_path">Enter the pdf path:</label>
-            <input type="text" id="pdf_path" name="pdf_path" required><br><br>
+            <label for="pdf_path">Enter the PDF path:</label>
+            <input type="text" id="pdf_path" name="pdf_path" required><br>
 
-            <label for="query">Enter the query:</label>
-            <input type="text" id="query" name="query" required><br><br>
+            <label for="query">Enter your query:</label>
+            <input type="text" id="query" name="query" required><br>
 
             <button type="submit">Search</button>
         </form>
 
         {% if query %}
-        <h2>Result for : {{ query }}</h2>
-        <p>{{ answer }}</p>
+        <div class="result">
+            <h2>Results for: {{ query }}</h2>
+            <p>{{ answer }}</p>
+        </div>
         {% endif %}
     </div>
 </body>
