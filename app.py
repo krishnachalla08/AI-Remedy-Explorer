@@ -14,25 +14,32 @@ def load_pdf_text(path):
     with open(path, 'rb') as file:
         reader = PyPDF2.PdfReader(file)
         text = ""
-        for page in reader.pages:
+        for page_num, page in enumerate(reader.pages):
+            text += f"PAGE_START_{page_num}\n"  # Add page delimiter
             text += page.extract_text()
+            text += f"\nPAGE_END_{page_num}\n"  # Add page delimiter
     return text
 
 
 def build_inverted_index(text):
     """Creates an inverted index from the text."""
     index = {}
-    page_num = 0
-    for word in text.split():
-        cleaned_word = ''.join(c for c in word if c.isalnum())
-        if cleaned_word:
-            if cleaned_word.lower() in index:
-                index[cleaned_word.lower()].append(page_num)
-            else:
-                index[cleaned_word.lower()] = [page_num]
-        if '\n' in word:
-            page_num += 1
+    current_page = None
+    for line in text.splitlines():
+        if line.startswith('PAGE_START_'):
+            current_page = int(line.split('_')[-1])
+        elif line.startswith('PAGE_END_'):
+            current_page = None
+        else:
+            for word in line.split():
+                cleaned_word = ''.join(c for c in word if c.isalnum())
+                if cleaned_word:
+                    if cleaned_word.lower() in index:
+                        index[cleaned_word.lower()].append((current_page, line.find(word)))
+                    else:
+                        index[cleaned_word.lower()] = [(current_page, line.find(word))]
     return index
+
 
 
 def get_page_text(page_num, reader):
@@ -45,10 +52,9 @@ def answer_query(index, query, reader):
     keywords = [word.lower() for word in query.split()]
 
     relevant_pages = set()
-    for word in keywords:
-        word_pages = index.get(word)
-        if word_pages:
-            relevant_pages.update(word_pages)
+    for keyword in keywords:
+        if keyword in index:
+            relevant_pages.update(page for page, _ in index[keyword])
 
     if not relevant_pages:
         return "No relevant information found in the PDF for your query."
@@ -59,7 +65,7 @@ def answer_query(index, query, reader):
         doc = nlp(page_text)
 
         for sentence in doc.sents:
-            # Check for presence of any keyword in the sentence
+            # Check for presence of all keywords in the sentence
             if all(keyword.lower() in sentence.text.lower() for keyword in keywords):
                 relevant_sentences.append(sentence)
 
@@ -72,6 +78,7 @@ def answer_query(index, query, reader):
         answer += f"- {sentence.text}\n"
 
     return answer
+
 
 
 @app.route('/', methods=['GET', 'POST'])
