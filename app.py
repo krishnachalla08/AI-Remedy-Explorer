@@ -3,21 +3,21 @@ from PyPDF2 import PdfReader
 import PyPDF2
 from nltk.tokenize import sent_tokenize
 import spacy
+import io
 
 app = Flask(__name__)
 
 nlp = spacy.load("en_core_web_sm")
 
 
-def load_pdf_text(path):
+def load_pdf_text(file):
     """Extracts text from a PDF."""
-    with open(path, 'rb') as file:
-        reader = PyPDF2.PdfReader(file)
-        text = ""
-        for page_num, page in enumerate(reader.pages):
-            text += f"PAGE_START_{page_num}\n"  # Add page delimiter
-            text += page.extract_text()
-            text += f"\nPAGE_END_{page_num}\n"  # Add page delimiter
+    reader = PyPDF2.PdfReader(file)
+    text = ""
+    for page_num, page in enumerate(reader.pages):
+        text += f"PAGE_START_{page_num}\n"  # Add page delimiter
+        text += page.extract_text()
+        text += f"\nPAGE_END_{page_num}\n"  # Add page delimiter
     return text
 
 
@@ -39,7 +39,6 @@ def build_inverted_index(text):
                     else:
                         index[cleaned_word.lower()] = [(current_page, line.find(word))]
     return index
-
 
 
 def get_page_text(page_num, reader):
@@ -80,21 +79,22 @@ def answer_query(index, query, reader):
     return answer
 
 
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        pdf_path = request.form['pdf_path']
-        query = request.form['query']
+        if 'file' not in request.files:
+            return render_template('index.html', query='', answer='Please upload a file.')
 
-        pdf_text = load_pdf_text(pdf_path)
-        index = build_inverted_index(pdf_text)
+        file = request.files['file']
+        if file.filename == '':
+            return render_template('index.html', query='', answer='No selected file.')
 
-        with open(pdf_path, 'rb') as file:
-            reader = PyPDF2.PdfReader(file)
+        if file:
+            pdf_text = load_pdf_text(file)
+            index = build_inverted_index(pdf_text)
 
-            answer = answer_query(index, query, reader)
-            return render_template('index.html', query=query, answer=answer)
+            answer = answer_query(index, request.form['query'], PyPDF2.PdfReader(file))
+            return render_template('index.html', query=request.form['query'], answer=answer)
 
     return render_template('index.html', query='', answer='')
 
